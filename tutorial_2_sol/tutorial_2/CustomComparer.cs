@@ -15,7 +15,7 @@ namespace tutorial_2
                         $"{y.FirstName} {y.Email} {y.LastName} {y.StudentIndex}");
         }
 
-        public int GetHashCode([DisallowNull] Student obj)
+        public int GetHashCode(Student obj)
         {
             return StringComparer
                 .InvariantCultureIgnoreCase

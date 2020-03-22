@@ -17,39 +17,48 @@ namespace tutorial2
             var filePath = @$"{args[0]}";
             var destPath = @$"{args[1]}";
             var fileFormat = args[2];
+            University uni = new University()
+            {
+                CreatedaAt = DateTime.Now.ToString("h:mm:ss tt"),
+                Author = "Alice Lashuk"
+            };
+
+            var list = parseToList(filePath);
+            var listOfSt = (HashSet<Student>)list[0];
+            var listOfStudies = new HashSet<ActiveStudies>((List<ActiveStudies>)list[1]);
+            uni.studentsSet = listOfSt;
+            uni.studies = listOfStudies;
 
             if (fileFormat.Equals("xml"))
             {
-                generateXml(filePath, destPath);
+                GenerateXml(destPath, uni);
             }
             else
             {
-                generateJSON(filePath, destPath);
+                GenerateJSON(destPath, uni);
             }
         }
-        public static void generateXml(string filePath, string destPath)
+
+        public static void GenerateXml(string destPath, University uni)
         {
-            XmlRootAttribute rAttr = new XmlRootAttribute("university");
-
             var writer = new FileStream(@$"{destPath}", FileMode.Create);
-            var serializer = new XmlSerializer(typeof(HashSet<Student>), new XmlRootAttribute("university"));
-            serializer.Serialize(writer, parseToList(filePath));
-
+            var serializer = new XmlSerializer(typeof(University));
+            serializer.Serialize(writer, uni);
         }
 
-        public static void generateJSON(string filePath, string destPath)
+        public static void GenerateJSON(string destPath, University uni)
         {
             string jsonString;
-            jsonString = JsonSerializer.Serialize(parseToList(filePath));
-            File.WriteAllText(@"result.json", jsonString);
+            jsonString = JsonSerializer.Serialize(uni);
+            File.WriteAllText(@$"{destPath}", jsonString);
         }
 
-        public static HashSet<Student> parseToList(string path)
+        public static List<Object> parseToList(string path)
         {
             using var sw = new StreamWriter(@"log.txt");
             var fi = new FileInfo(path);
             var listOfStudent = new HashSet<Student>(new CustomComparer());
-            var listOfStudies = new LinkedList<ActiveStudies>();
+            var listOfStudies = new List<ActiveStudies>();
             Int32 count = 0;
             using (var stream = new StreamReader(fi.OpenRead()))
             {
@@ -104,24 +113,21 @@ namespace tutorial2
 
                         if (listOfStudies.Contains(activeStudy))
                         {
-                            listOfStudies.Find(activeStudy).Value.increaseNumber();
-                            sw.WriteLine($"{activeStudy} was not added to the list");
+                            Console.WriteLine("test");
+                            listOfStudies.Find(x => x.GetName() == activeStudy.GetName()).Number++; 
+                            sw.WriteLine($"{activeStudy.GetName()} was not added to the list");
+                        } else
+                        {
+                            listOfStudies.Add(activeStudy);
                         }
                     }
                 }
             }
-            //Console.WriteLine($"count {count}");
-            //Console.WriteLine($"numberOfstudents {listOfStudent.Count}");
-            //Console.WriteLine(listOfStudies.ToString());
-            //var comList = new List<Combined>();
-            //var combined = new Combined
-            //{
-            //    ListfOfStudies = listOfStudies.ToList(),
-            //    ListOfStudent = listOfStudent.ToList()
-            //};
-            //comList.Add(combined);
-           
-            return listOfStudent;
+            
+            var list = new List<Object>();
+            list.Add(listOfStudent);
+            list.Add(listOfStudies);
+            return list;
         }
 
         public static void reportError(string msg)
